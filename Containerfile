@@ -37,7 +37,7 @@ RUN echo "" && \
                     && \
     \
     source /container/base/functions/container/build && \
-    container_build_log && \
+    container_build_log image && \
     create_user ${APP_USER} 4237 ${APP_USER} 4237 /${APP_USER} && \
     package update && \
     package upgrade && \
@@ -51,6 +51,7 @@ RUN echo "" && \
     mkdir -p /gcds && \
     chown -R ${APP_USER}:${APP_USER} /gcds && \
     sudo -u ${APP_USER} /usr/src/install.sh -q -varfile /usr/src/gcds.varfile && \
+    container_build_log add "Google Cloud Directory Sync" "${GCDS_VERSION}"  && \
     \
     mkdir -p /container/data/gcds/ && \
     cp -R /gcds/.java /container/data/gcds/ && \

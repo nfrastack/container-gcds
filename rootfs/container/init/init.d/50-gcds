@@ -8,7 +8,7 @@ prepare_service
 SERVICE_NAME="gcds"
 
 gcds_setup_container_mode
-set -x
+
 if [ ! -f "/container/state/restart" ] ; then
     if var_true "${ENABLE_STANDALONE}" ; then
         print_debug "Configuring Standalone Mode"
