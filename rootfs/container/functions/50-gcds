@@ -132,15 +132,19 @@ gcds_configure_gcds() {
 }
 
 gcds_configure_monitoring() {
-    if var_true "${CONTAINER_ENABLE_MONITORING}" && [ "${CONTAINER_MONITORING_BACKEND,,}" = "zabbix" ]; then
-        source /container/base/defaults/defaults/*-monitoring
-        cat <<EOF > "${ZABBIX_CONFIG_PATH}"/"${ZABBIX_CONFIG_FILE}".d/gcds.conf
+    if var_true "${CONTAINER_ENABLE_MONITORING}" ; then
+        source /container/base/defaults/*-monitoring
+        case "${CONTAINER_MONITORING_BACKEND,,}" in
+            "zabbix" )
+                cat <<EOF | silent tee "${ZABBIX_CONFIG_PATH%/}"/"${ZABBIX_CONFIG_FILE}.d"/nfrastack_gcds.conf
 # Zabbix GCDS Exporter Configuration - Automatically Generated
-# Find Companion Zabbix Server Templates at https://github.com/tiredofit/docker-gcds
+# Find Companion Zabbix Server Templates at https://github.com/nfrastack/container-gcds
 # Autoregister=gcds
 
-UserParameter=gcds.version,/gcds/sync-cmd -v | head -n 1 | awk '{print \$2}'
+UserParameter=gcds.version,/${APP_USER}/sync-cmd -v | head -n 1 | awk '{print \$2}'
 EOF
+            ;;
+        esac
     fi
 }
 
@@ -305,23 +309,27 @@ gcds_post_sync() {
     sync_finish_time=$(date +"%s")
     sync_total_time=$(echo $((sync_finish_time-sync_start_time)))
 
-    if var_true "${CONTAINER_ENABLE_MONITORING}" && [ "${CONTAINER_MONITORING_BACKEND,,}" = "zabbix" ]; then
-        print_notice "Sending Sync Statistics to Zabbix"
-        silent s6-setuidgid "${ZABBIX_USER}" zabbix_sender \
-                            -c "${ZABBIX_CONFIG_PATH}"/"${ZABBIX_CONFIG_FILE}" \
-                            -k gcds.last_sync \
-                            -o "${log_unixdate}"
-        silent s6-setuidgid "${ZABBIX_USER}" zabbix_sender \
-                            -c "${ZABBIX_CONFIG_PATH}"/"${ZABBIX_CONFIG_FILE}" \
-                            -k gcds.sync_status \
-                            -o "${error_code}"
-        silent s6-setuidgid "${ZABBIX_USER}" zabbix_sender \
-                            -c "${ZABBIX_CONFIG_PATH}"/"${ZABBIX_CONFIG_FILE}" \
-                            -k gcds.sync_duration \
-                            -o "$(echo $((sync_finish_time-sync_start_time)))"
-        if [ "$?" != "0" ] ; then
-            print_error "Error sending statistics, consider disabling with 'CONTAINER_ENABLE_MONITORING=FALSE'"
-        fi
+    if var_true "${CONTAINER_ENABLE_MONITORING}" ; then
+        case "${CONTAINER_MONITORING_BACKEND,,}" in
+            "zabbix" )
+                print_notice "Sending Sync Statistics to Zabbix"
+                silent s6-setuidgid "${ZABBIX_USER}" zabbix_sender \
+                                    -c "${ZABBIX_CONFIG_PATH}"/"${ZABBIX_CONFIG_FILE}" \
+                                    -k gcds.last_sync \
+                                    -o "${log_unixdate}"
+                silent s6-setuidgid "${ZABBIX_USER}" zabbix_sender \
+                                    -c "${ZABBIX_CONFIG_PATH}"/"${ZABBIX_CONFIG_FILE}" \
+                                    -k gcds.sync_status \
+                                    -o "${error_code}"
+                silent s6-setuidgid "${ZABBIX_USER}" zabbix_sender \
+                                    -c "${ZABBIX_CONFIG_PATH}"/"${ZABBIX_CONFIG_FILE}" \
+                                    -k gcds.sync_duration \
+                                    -o "$(echo $((sync_finish_time-sync_start_time)))"
+                if [ "$?" != "0" ] ; then
+                    print_error "Error sending statistics, consider disabling with 'CONTAINER_ENABLE_MONITORING=FALSE'"
+                fi
+            ;;
+        esac
     fi
 
     ### Post Script Support

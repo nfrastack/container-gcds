@@ -12,7 +12,7 @@
                 "uuid": "8f8bf985e72a48f5ac4e92a00e522893",
                 "template": "GCDS",
                 "name": "GCDS",
-                "description": "Google Cloud Directory Sync\n\nThis template is meant for use specifically with https://github.com/tiredofit/docker-gcds\nMeant for Version 6.0 and up.",
+                "description": "Google Cloud Directory Sync\n\nThis template is meant for use specifically with https://github.com/nfrastack/container-gcds\nMeant for Version 6.0 and up.",
                 "groups": [
                     {
                         "name": "Templates/Applications"

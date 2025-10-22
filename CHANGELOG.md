@@ -1,3 +1,9 @@
+## 8.0.1 2025-10-22 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Optimize monitoring detection routines
+
+
 ## 8.0.0 2025-08-16 <dave at tiredofit dot ca>
 
    ### Added

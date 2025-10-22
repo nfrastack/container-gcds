@@ -1,8 +1,11 @@
-ARG BASE_IMAGE
-ARG DISTRO
-ARG DISTRO_VARIANT
+# SPDX-FileCopyrightText: © 2025 Nfrastack <code@nfrastack.com>
+#
+# SPDX-License-Identifier: MIT
 
-FROM ${BASE_IMAGE}:${DISTRO}_${DISTRO_VARIANT}
+ARG \
+    BASE_IMAGE
+
+FROM ${BASE_IMAGE}
 
 LABEL \
         org.opencontainers.image.title="GCDS" \
