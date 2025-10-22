@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - { distro: "debian", distro_variant: "trixie", latest: "true", arch: "linux/amd64,linux/arm64" }
+          - { distro: "debian", distro_variant: "trixie", latest: "true", arch: "linux/amd64" }
     uses: nfrastack/gha/.github/workflows/container-build_generic.yml@main
     with:
       base_image: "ghcr.io/nfrastack/container-base"
