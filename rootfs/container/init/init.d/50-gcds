@@ -28,6 +28,6 @@ if [ ! -f "/container/state/restart" ] ; then
 fi
 
 print_debug "Cleanup any sync lock files"
-rm -rf "${CONFIG_PATH}"/SyncState/*.lock
+rm -rf "${CONFIG_PATH%/}"/SyncState/*.lock
 
 liftoff

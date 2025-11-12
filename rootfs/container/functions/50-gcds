@@ -11,14 +11,14 @@ gcds_bootstrap_filesystem() {
 
     print_debug "Creating Sync State folders and linking previous Java State"
 
-    if [ ! -d "${CONFIG_PATH}"/.java ]; then
+    if [ ! -d "${CONFIG_PATH%/}"/.java ]; then
         print_debug "Copying Java State to container"
         cp -aR /container/data/gcds/.java "${CONFIG_PATH}"
     fi
 
-    ln -sf "${CONFIG_PATH}"/.java /gcds/.java
-    ln -sf "${CONFIG_PATH}"/SyncState /gcds/syncState
-    ln -sf "${CONFIG_PATH}"/GADS_nonAddressPrimaryKeyFile.tsv /gcds/GADS_nonAddressPrimaryKeyFile.tsv
+    ln -sf "${CONFIG_PATH%/}"/.java /gcds/.java
+    ln -sf "${CONFIG_PATH%/}"/SyncState /gcds/syncState
+    ln -sf "${CONFIG_PATH%/}"/GADS_nonAddressPrimaryKeyFile.tsv /gcds/GADS_nonAddressPrimaryKeyFile.tsv
 
     if [ "${LOG_TYPE,,}" = "both" ] || [ "${LOG_TYPE,,}" = "file" ] ; then
         echo "0 0 * * * /usr/local/bin/logrotate_gcds >/dev/null 2>&1" | silent tee /container/cron/gcds_logrotate
@@ -34,11 +34,11 @@ gcds_check_errors() {
         fi
     }
 
-    if ls "${CONFIG_PATH}"/syncState/*.lock >/dev/null 2>&1; then
-        lockfile=$(ls -C "${CONFIG_PATH}"/SyncState/*.lock | sed "s|${CONFIG_PATH}/syncState||g")
-        if [ "$(stat --format=%Y "${CONFIG_PATH}"/"${lockfile}")" -le $(( $(date +%s) - 1800 )) ]; then
+    if ls "${CONFIG_PATH%/}"/syncState/*.lock >/dev/null 2>&1; then
+        lockfile=$(ls -C "${CONFIG_PATH%/}"/SyncState/*.lock | sed "s|${CONFIG_PATH}/syncState||g")
+        if [ "$(stat --format=%Y "${CONFIG_PATH%/}"/"${lockfile}")" -le $(( $(date +%s) - 1800 )) ]; then
             error_code=100
-            rm -rf  "${CONFIG_PATH}"/syncState/"${lockfile}"
+            rm -rf  "${CONFIG_PATH%/}"/syncState/"${lockfile}"
             gcds_notify \
                     "${log_date}" \
                     "${LOG_PATH}/$(date +"%Y%m%d")/${log_filename}" \
@@ -57,8 +57,8 @@ gcds_check_errors() {
                 "${error_code}" \
                 "[FATAL] Configuration File Issue" \
                 "GCDS is failing to sync due to an issue with the configuration file. Syncing has been disabled. Please restart the container"
-        sudo -u gcds mkdir -p "${LOG_PATH}"/"$(date +"%Y%m%d")"
-        sudo -u gcds mv /tmp/"${log_filename}" "${LOG_PATH}"/"$(date +"%Y%m%d")"/"${log_filename%%.*}".error
+        sudo -u gcds mkdir -p "${LOG_PATH%/}"/"$(date +"%Y%m%d")"
+        sudo -u gcds mv /tmp/"${log_filename}" "${LOG_PATH%/}"/"$(date +"%Y%m%d")"/"${log_filename%%.*}".error
         halt_scheduling
         return "${error_code}"
     fi
@@ -72,8 +72,8 @@ gcds_check_errors() {
                 "${error_code}" \
                 "[FATAL] Configuration File Version Mismatch" \
                 "GCDS is failing to sync due to the configuration file being from another version. Syncing has been disabled. Please upgrade the configuration and restart the container."
-        sudo -u gcds mkdir -p "${LOG_PATH}"/"$(date +"%Y%m%d")"
-        sudo -u gcds mv /tmp/"${log_filename}" "${LOG_PATH}"/"$(date +"%Y%m%d")"/"${log_filename%%.*}".error
+        sudo -u gcds mkdir -p "${LOG_PATH%/}"/"$(date +"%Y%m%d")"
+        sudo -u gcds mv /tmp/"${log_filename}" "${LOG_PATH%/}"/"$(date +"%Y%m%d")"/"${log_filename%%.*}".error
         halt_scheduling
         return "${error_code}"
     fi
@@ -87,8 +87,8 @@ gcds_check_errors() {
                 "${error_code}" \
                 "[ERROR] OAUTH Key expired" \
                 "GCDS is failing to sync due to an issue with the OAUTH key. Reauthorize with the GUI and restart the container. Syncing has been disabled."
-        sudo -u gcds mkdir -p "${LOG_PATH}"/"$(date +"%Y%m%d")"
-        sudo -u gcds mv /tmp/"${log_filename}" "${LOG_PATH}"/"$(date +"%Y%m%d")"/"${log_filename%%.*}".error
+        sudo -u gcds mkdir -p "${LOG_PATH%/}"/"$(date +"%Y%m%d")"
+        sudo -u gcds mv /tmp/"${log_filename}" "${LOG_PATH%/}"/"$(date +"%Y%m%d")"/"${log_filename%%.*}".error
         halt_scheduling
         return "${error_code}"
     fi
@@ -102,8 +102,8 @@ gcds_check_errors() {
                 "${error_code}" \
                 "[ERROR] LDAP problems detected" \
                 "GCDS is failing to sync due to LDAP issues. Please reconfigure with the GUI and restart the container. Syncing has been disabled."
-        sudo -u gcds mkdir -p "${LOG_PATH}"/"$(date +"%Y%m%d")"
-        sudo -u gcds mv /tmp/"${log_filename}" "${LOG_PATH}"/"$(date +"%Y%m%d")"/"${log_filename%%.*}".error
+        sudo -u gcds mkdir -p "${LOG_PATH%/}"/"$(date +"%Y%m%d")"
+        sudo -u gcds mv /tmp/"${log_filename}" "${LOG_PATH%/}"/"$(date +"%Y%m%d")"/"${log_filename%%.*}".error
         halt_scheduling
         return "${error_code}"
     fi
@@ -115,7 +115,7 @@ gcds_check_errors() {
 }
 
 gcds_configure_gcds() {
-    if [ -f "${CONFIG_PATH}"/"${CONFIG_FILE}" ] ; then
+    if [ -f "${CONFIG_PATH%/}"/"${CONFIG_FILE}" ] ; then
         if var_true "${AUTO_UPGRADE_CONFIG}" ; then
             if [ -n "${OAUTH_TOKEN}" ] ; then
                 oauth_token=$(mktemp)
@@ -125,7 +125,7 @@ gcds_configure_gcds() {
                     oauth_token_arg+="--password ${OAUTH_TOKEN_PASSWORD}"
                 fi
             fi
-            silent /gcds/update-config -c "${CONFIG_PATH}"/"${CONFIG_FILE}" "${oauth_token_arg}"
+            silent /gcds/update-config -c "${CONFIG_PATH%/}"/"${CONFIG_FILE}" "${oauth_token_arg}"
             rm -rf "${oauth_token}"
         fi
     fi
@@ -289,7 +289,7 @@ gcds_perform_sync() {
         print_notice "Starting Sync Process and comitting changes to Google"
         dry_run_arg="-a"
     fi
-    sudo -u gcds mkdir -p "${LOG_PATH}"/"$(date +"%Y%m%d")"
+    sudo -u gcds mkdir -p "${LOG_PATH%/}"/"$(date +"%Y%m%d")"
     su gcds \
             -s /bin/sh \
             -c " \
@@ -300,7 +300,7 @@ gcds_perform_sync() {
                                     -o ${flush_arg} ${dry_run_arg} 2> /tmp/${log_filename} \
                                     "
 
-    cd "${LOG_PATH}"/"$(date +"%Y%m%d")"
+    cd "${LOG_PATH%/}"/"$(date +"%Y%m%d")"
     ln -sf "$(date +"%Y%m%d")"/"${log_filename}" ../latest-sync.log
     app_exit_code=$?
 }
@@ -314,15 +314,15 @@ gcds_post_sync() {
             "zabbix" )
                 print_notice "Sending Sync Statistics to Zabbix"
                 silent s6-setuidgid "${ZABBIX_USER}" zabbix_sender \
-                                    -c "${ZABBIX_CONFIG_PATH}"/"${ZABBIX_CONFIG_FILE}" \
+                                    -c "${ZABBIX_CONFIG_PATH%/}"/"${ZABBIX_CONFIG_FILE}" \
                                     -k gcds.last_sync \
                                     -o "${log_unixdate}"
                 silent s6-setuidgid "${ZABBIX_USER}" zabbix_sender \
-                                    -c "${ZABBIX_CONFIG_PATH}"/"${ZABBIX_CONFIG_FILE}" \
+                                    -c "${ZABBIX_CONFIG_PATH%/}"/"${ZABBIX_CONFIG_FILE}" \
                                     -k gcds.sync_status \
                                     -o "${error_code}"
                 silent s6-setuidgid "${ZABBIX_USER}" zabbix_sender \
-                                    -c "${ZABBIX_CONFIG_PATH}"/"${ZABBIX_CONFIG_FILE}" \
+                                    -c "${ZABBIX_CONFIG_PATH%/}"/"${ZABBIX_CONFIG_FILE}" \
                                     -k gcds.sync_duration \
                                     -o "$(echo $((sync_finish_time-sync_start_time)))"
                 if [ "$?" != "0" ] ; then

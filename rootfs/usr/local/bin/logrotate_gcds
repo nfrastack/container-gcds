@@ -5,13 +5,13 @@ source /container/defaults/05-logging
 source /container/defaults/50-gcds
 
 ## Compress each log 2 days old
-timestamp_2dayold_unixtime="$(stat -c %Y "${LOG_PATH}"/"$(date --date='2 days ago' +'%Y%m%d')")"
-for logfile in "${LOG_PATH}"/"$(date --date='2 days ago' +'%Y%m%d')"/"$(date --date='2 days ago' +'%Y%m%d')"_*.log ; do
+timestamp_2dayold_unixtime="$(stat -c %Y "${LOG_PATH%/}"/"$(date --date='2 days ago' +'%Y%m%d')")"
+for logfile in "${LOG_PATH%/}"/"$(date --date='2 days ago' +'%Y%m%d')"/"$(date --date='2 days ago' +'%Y%m%d')"_*.log ; do
     sudo -u gcds zstd --rm --rsyncable "${logfile}"
 done
-touch -t $(date -d"@${timestamp_2dayold_unixtime}" +'%Y%m%d%H%m.%S') "${LOG_PATH}"/"$(date --date='2 days ago' +'%Y%m%d')"
+touch -t $(date -d"@${timestamp_2dayold_unixtime}" +'%Y%m%d%H%m.%S') "${LOG_PATH%/}"/"$(date --date='2 days ago' +'%Y%m%d')"
 
-for logfile in "${LOG_PATH}"/"$(date --date='2 days ago' +'%Y%m%d')"/"$(date --date='2 days ago' +'%Y%m%d')"_*.error ; do
+for logfile in "${LOG_PATH%/}"/"$(date --date='2 days ago' +'%Y%m%d')"/"$(date --date='2 days ago' +'%Y%m%d')"_*.error ; do
     sudo -u gcds zstd --rm --rsyncable "${logfile}"
 done
 
@@ -21,7 +21,7 @@ if [ -n "${LOG_PATH}" ] && [ -d "${LOG_PATH}" ] ; then
 fi
 
 # Look for stale symbolic links and delete accordingly
-for symbolic_link in "${LOG_PATH}"/latest*.log ; do
+for symbolic_link in "${LOG_PATH%/}"/latest*.log ; do
     if [ ! -e "${symbolic_link}" ] ; then
         rm -rf "${symbolic_link}"
     fi
