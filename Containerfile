@@ -25,7 +25,7 @@ COPY LICENSE /usr/src/container/LICENSE
 COPY README.md /usr/src/container/README.md
 
 ENV \
-    GCDS_VERSION=${GCDS_VERSION:-"5.0.31"} \
+    GCDS_VERSION=${GCDS_VERSION:-"5.0.41"} \
     APP_USER=gcds \
     IMAGE_NAME="nfrastack/gcds" \
     IMAGE_REPO_URL="https://github.com/nfrastack/container-gcds/"
