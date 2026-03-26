@@ -1,5 +1,5 @@
 #!/command/with-contenv bash
-# SPDX-FileCopyrightText: © 2025 Nfrastack <code@nfrastack.com>
+# SPDX-FileCopyrightText: © 2026 Nfrastack <code@nfrastack.com>
 #
 # SPDX-License-Identifier: MIT
 
@@ -11,7 +11,7 @@ source /container/defaults/50-gcds
 SERVICE_NAME="gcds-scheduler"
 liftoff
 
-setup_container_mode
+gcds_setup_container_mode
 
 if [ "${MODE,,}" = "manual" ] || [ "${MODE,,}" = "none" ] || [ "${MODE,,}" = "standalone" ] || [ "${1,,}" = "manual" ] || [ "${1,,}" = "now" ]; then
     SYNC_BEGIN=+0

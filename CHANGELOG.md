@@ -1,3 +1,12 @@
+## 8.0.3 2026-03-26 <code at nfastack dot com>
+
+   ### Added
+      - GCDS 5.0.45
+
+   ### Changed
+      - Fix isues with container_mode setup
+
+
 ## 8.0.2 2025-12-19 <dave at tiredofit dot ca>
 
    ### Added

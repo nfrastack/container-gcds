@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: © 2025 Nfrastack <code@nfrastack.com>
+# SPDX-FileCopyrightText: © 2026 Nfrastack <code@nfrastack.com>
 #
 # SPDX-License-Identifier: MIT
 
@@ -17,16 +17,16 @@ LABEL \
         org.opencontainers.image.vendor="Nfrastack <https://www.nfrastack.com>" \
         org.opencontainers.image.licenses="MIT"
 
-ARG     \
-        GCDS_VERSION
+ARG \
+    GCDS_VERSION=5.0.45 \
+    APP_USER
 
 COPY CHANGELOG.md /usr/src/container/CHANGELOG.md
 COPY LICENSE /usr/src/container/LICENSE
 COPY README.md /usr/src/container/README.md
 
 ENV \
-    GCDS_VERSION=${GCDS_VERSION:-"5.0.41"} \
-    APP_USER=gcds \
+    APP_USER=${APP_USER:-"gcds"} \
     IMAGE_NAME="nfrastack/gcds" \
     IMAGE_REPO_URL="https://github.com/nfrastack/container-gcds/"
 

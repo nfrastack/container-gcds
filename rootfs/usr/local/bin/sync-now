@@ -1,3 +1,6 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: © 2026 Nfrastack <code@nfrastack.com>
+#
+# SPDX-License-Identifier: MIT
 
 exec /container/run/available/50-gcds-scheduler/run NOW
