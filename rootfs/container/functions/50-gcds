@@ -136,7 +136,7 @@ gcds_configure_monitoring() {
         source /container/base/defaults/*-monitoring
         case "${CONTAINER_MONITORING_BACKEND,,}" in
             "zabbix" )
-                cat <<EOF | silent tee "${ZABBIX_CONFIG_PATH%/}"/"${ZABBIX_CONFIG_FILE}.d"/nfrastack_gcds.conf
+                write_file "${ZABBIX_CONFIG_PATH%/}"/"${ZABBIX_CONFIG_FILE}.d"/nfrastack_gcds.conf <<EOF
 # Zabbix GCDS Exporter Configuration - Automatically Generated
 # Find Companion Zabbix Server Templates at https://github.com/nfrastack/container-gcds
 # Autoregister=gcds
